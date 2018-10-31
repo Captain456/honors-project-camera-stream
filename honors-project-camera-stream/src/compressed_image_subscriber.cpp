@@ -14,8 +14,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
-
-using namespace cv;
+#include <string>
 
 /*
  * The callback method for the subscriber node. Attempts to display the
@@ -23,17 +22,19 @@ using namespace cv;
  *
  * msg: The compressed image sensor message.
  */
-void imageCallback(const sensor_msgs::ImageConstPtr& msg)
+void imageCallback(const sensor_msgs::CompressedImageConstPtr& msg)
 {
         try
         {
-                cv::imshow("view", cv_bridge::toCvShare(msg, "bgr8")->image);
+                // Convert from a compressed image to a cv::Mat
+                cv::Mat image = cv::imdecode(cv::Mat(msg->data), 1);
+                // Display the cv::Mat
+                cv::imshow("view", image);
                 cv::waitKey(30);
         }
         catch (cv_bridge::Exception& exception)
         {
-                ROS_ERROR("Could not convert from '%s' to 'bgr8'",
-                                msg->encoding.c_str());
+                ROS_ERROR("Could not convert the image.");
         }
 }
 
@@ -43,20 +44,30 @@ void imageCallback(const sensor_msgs::ImageConstPtr& msg)
  */
 int main(int argc, char **argv)
 {
+        std::string param;
+        std::string topic;
+
         // Set up the node
         ros::init(argc, argv, "compressed_image_subscriber");
         ros::NodeHandle nh;
+
+        // Get parameters
+        if (nh.getParam("topic", param))
+        {
+                topic = param;
+        }
+        else
+        {
+                topic = "/webcam/image_raw/compressed";
+        }
 
         // Create a window to display the stream
         cv::namedWindow("view");
         cv::startWindowThread();
 
-        // Subscribe to the image topic
-        // Note - Must subscribe to base raw image topic instead of the
-        // compressed one
-        image_transport::ImageTransport it(nh);
-        image_transport::Subscriber sub =
-                it.subscribe("webcam/image_raw", 1, imageCallback);
+        // Subscribe to the compressed image topic
+        ros::Subscriber sub =
+                nh.subscribe(topic, 1, imageCallback);
 
         ros::spin();
 
