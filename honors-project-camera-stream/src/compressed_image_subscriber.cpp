@@ -15,6 +15,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <cv_bridge/cv_bridge.h>
 #include <string>
+#include <iostream>
 
 /*
  * The callback method for the subscriber node. Attempts to display the
@@ -49,7 +50,7 @@ int main(int argc, char **argv)
 
         // Set up the node
         ros::init(argc, argv, "compressed_image_subscriber");
-        ros::NodeHandle nh;
+        ros::NodeHandle nh("~");
 
         // Get parameters
         if (nh.getParam("topic", param))
@@ -60,6 +61,8 @@ int main(int argc, char **argv)
         {
                 topic = "/webcam/image_raw/compressed";
         }
+
+        std::cout << "Topic: " << topic << std::endl;
 
         // Create a window to display the stream
         cv::namedWindow("view");
