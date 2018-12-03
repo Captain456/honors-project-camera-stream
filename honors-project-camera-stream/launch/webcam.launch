@@ -1,4 +1,6 @@
 <?xml version="1.0"?>
+<!-- This file was created from a tutorial from the video_stream_opencv package, found here:
+     http://wiki.ros.org/video_stream_opencv-->
 <launch>
    <!-- launch video stream -->
    <include file="$(find video_stream_opencv)/launch/camera.launch" >
